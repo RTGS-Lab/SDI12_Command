@@ -13,53 +13,33 @@ void setup() {
 	pinMode(FOut, OUTPUT);
 	pinMode(Dir, OUTPUT);
 
-	digitalWrite(Dir, HIGH); //Set to transmit 
 	Serial1.begin(1200, SERIAL_7E1);
-	SerialUSB.begin(115200);
+	Serial.begin(115200);
+  ReleaseBus();
 }
 
 void loop() {
-	// digitalWrite(TX, LOW);
-	// digitalWrite(FOut, LOW);
-	// delay(1000);
-	// digitalWrite(FOut, LOW);
-	// digitalWrite(TX, HIGH);
-	// delay(1000);
-	// digitalWrite(FOut, HIGH);
-	// digitalWrite(TX, LOW);
-	// delay(1000);
-	// digitalWrite(FOut, HIGH);
-	// digitalWrite(TX, HIGH);
-	// delay(1000);
 	static int ReadLength = 0;
   	String ReadString;
-	if(SerialUSB.available() > 0) {
-    char Input = SerialUSB.read();
+	if(Serial.available() > 0) {
+    char Input = Serial.read();
 
-    // Increment counter while waiting for carrage return or newline
+    // Increment counter while waiting for carriage return or newline
     if(Input != 13 || Input != 10) {
-//      SerialUSB.println(Input); //DEBUG!
       ReadArray[ReadLength] = Input;
-//      SerialUSB.println(ReadArray[ReadLength]); //DEBUG!
       ReadLength++;
     }
 
     if(Input == 13 || Input == 10) { // carriage or newline
-//      SerialUSB.println("CARRAGE OR NEWLINE"); //DEBUG!
       ReadString = String(ReadArray);
-//      SerialUSB.println(ReadString);
       ReadString.trim();
       memset(ReadArray, 0, sizeof(ReadArray));
       ReadLength = 0;
 
-	// while(SerialUSB.peek() != '\n'); //Wait for new command
-	// String NewCommand = SerialUSB.readStringUntil('\n');
-    SerialUSB.print(">");
-	SerialUSB.println(ReadString); //Echo back to SerialUSB monitor
-	SerialUSB.println(SendCommand(ReadString));
+    Serial.print(">");
+	Serial.println(ReadString); //Echo back to Serial monitor
+	Serial.println(SendCommand(ReadString));
 	}
-	// GetAddress();
-	// delay(5000);
 
 }
 }
@@ -73,13 +53,11 @@ char GetAddress()
 	Serial1.flush(); //Make sure data is transmitted before releasing the bus
 	delay(1);
 	ReleaseBus(); //Switch bus to recieve 
-	// char Var = SerialUSB.re
 
 	unsigned long LocalTime = millis();
-	// bool GotData = false;
 	while(Serial1.available() < 3 && (millis() - LocalTime) <  TimeoutStandard);
 	String Val = Serial1.readStringUntil('\r');
-	SerialUSB.println(Val);
+	Serial.println(Val);
 	return 0; //DEBUG!
 }
 
@@ -113,8 +91,6 @@ void Space(unsigned long Period)
 	digitalWrite(TX, 1); //Stop spacing
 }
 
-// void SendCommand()
-
 void ReleaseBus() 
 {
 	pinMode(Dir, OUTPUT); //Make sure direction pin is set as an output
@@ -130,7 +106,6 @@ String SendCommand(String Command)
 	Serial1.flush(); //Make sure data is transmitted before releasing the bus
 	delay(1);
 	ReleaseBus(); //Switch bus to recieve 
-	// char Var = SerialUSB.re
 
 	unsigned long LocalTime = millis();
 	char Data[100] = {0}; //Make data array for storage FIX! Change length to not be arbitrary
@@ -145,8 +120,5 @@ String SendCommand(String Command)
 	}
 	String Val = String(Data); //Convert to String
 	Val.trim(); //Get rid of any trailing characters 
-	// while(Serial1.available() < 3 && (millis() - LocalTime) <  TimeoutStandard);
-	// String Val = Serial1.readStringUntil('\r');
-	// SerialUSB.println(Val);
 	return Val; 
 }
